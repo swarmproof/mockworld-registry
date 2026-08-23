@@ -16,3 +16,5 @@ jobs:
       - run: pip install mockworld-mcp
       - name: Validate mocks + verify checksums
         run: python scripts/check.py
+      - name: E2E scenario checks (mock behavior, not just schema)
+        run: python scripts/e2e.py
