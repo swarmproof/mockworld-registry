@@ -1,0 +1,82 @@
+schema_version: "1"
+name: twilio
+version: "0.1.0"
+description: >
+  Fake Twilio SMS. Send messages and track delivery with realistic segment
+  billing, balance, a queued→delivered status lifecycle, invalid-number and
+  opt-out (STOP) handling, and Twilio-shaped error codes.
+fidelity: partial
+
+state:
+  account:
+    key: id
+    fields: {id: str, balance_micro_usd: int, price_per_segment_micro_usd: int}
+  messages:
+    key: sid
+    fields:
+      {sid: str, to: str, from: str, body: str, status: str, num_segments: int,
+       price_micro_usd: int, error_code: int, created: int}
+  opt_outs:
+    key: number
+    fields: {number: str}
+
+seed:
+  generator: python:seed.generate
+  volume: {messages: 15}
+
+tools:
+  - name: send_sms
+    description: >
+      Send an SMS from `from` to `to` (E.164, e.g. +14155550123). Body is billed
+      per 160-char segment against the account balance. Fails for invalid numbers
+      (21211), opted-out recipients (21610), or insufficient balance. Returns the
+      message with a `sid` and status 'queued'.
+    params:
+      to: {type: str, required: true}
+      from: {type: str, required: true}
+      body: {type: str, required: true}
+    behavior: python:handlers.send_sms
+    faults:
+      - type: rate_limited
+        probability: 0.03
+        retry_after_s: 1
+
+  - name: get_message_status
+    description: >
+      Fetch a message by `sid`. A 'queued' message advances to 'delivered' on
+      read (the delivery callback). Returns the current status.
+    params:
+      sid: {type: str, required: true}
+    behavior: python:handlers.get_message_status
+
+  - name: list_messages
+    description: "List sent messages, newest first."
+    params: {}
+    behavior: python:handlers.list_messages
+
+  - name: get_balance
+    description: "Get the account's remaining balance (in micro-USD)."
+    params: {}
+    behavior: python:handlers.get_balance
+
+errors:
+  invalid_number:
+    http_status: 400
+    body: {code: 21211, message: "The 'To' number is not a valid phone number.", status: 400}
+  blocked:
+    http_status: 400
+    body: {code: 21610, message: "The recipient has opted out (STOP) and cannot be messaged.", status: 400}
+  insufficient_balance:
+    http_status: 402
+    body: {code: 20003, message: "Insufficient account balance for this message.", status: 402}
+  message_not_found:
+    http_status: 404
+    body: {code: 20404, message: "The requested message was not found.", status: 404}
+
+fault_profiles:
+  none: {}
+  realistic: {inherit: tool_defaults}
+  hostile:
+    inherit: tool_defaults
+    overrides:
+      send_sms: {rate_limited: 0.2}

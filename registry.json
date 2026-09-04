@@ -3,11 +3,29 @@
   "description": "The public mockworld mock registry. `mockworld add mock:<name>` installs from here.",
   "mocks": [
     {
+      "name": "slack",
+      "version": "0.1.0",
+      "source": "github:swarmproof/mockworld-registry@main/mocks/slack",
+      "sha256": "c6131f7202b8e473def27d2394abe4e69ec3ba8d469c875c6be859b58766cbc9",
+      "description": "Fake Slack. Post messages, list channels, read history, and add reactions with realistic channel membership, threading, and Slack-shaped {ok:false, error} bodies.",
+      "fidelity": "partial",
+      "tools": 4
+    },
+    {
+      "name": "twilio",
+      "version": "0.1.0",
+      "source": "github:swarmproof/mockworld-registry@main/mocks/twilio",
+      "sha256": "aba333e85018b47679d07c538a6c07d2711dea6cec7c198a78b4b3c0ea9b0302",
+      "description": "Fake Twilio SMS. Send messages and track delivery with realistic segment billing, balance, a queued\u2192delivered status lifecycle, invalid-number and opt-out (STOP) handling, and Twilio-shaped error codes.",
+      "fidelity": "partial",
+      "tools": 4
+    },
+    {
       "name": "weather",
       "version": "0.1.0",
       "source": "github:swarmproof/mockworld-registry@main/mocks/weather",
       "sha256": "681c00f3ef2a99ac059e7b0f9bc5d6ce7963dab1221c7ec0b9a59f6f9d7dbb43",
-      "description": "Fake weather API — stations + deterministic forecast (authoring example).",
+      "description": "Fake weather API \u2014 stations + deterministic forecast (authoring example).",
       "fidelity": "sketch",
       "tools": 3
     }
